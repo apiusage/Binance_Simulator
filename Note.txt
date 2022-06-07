@@ -1,0 +1,17 @@
+cd C:\Users\bston\Desktop\Trading_Simulator
+streamlit run main.py
+
+https://github.com/sjhhh3/binance-simulator
+
+
+pip install pipreqs
+pipreqs --encoding=utf8 C:\Users\bston\Desktop\Trading_Simulator --force
+
+
+Menu
+https://medium.com/codex/create-a-multi-page-app-with-the-new-streamlit-option-menu-component-3e3edaf7e7ad
+
+Filter failure whether it be PRICE_FILTER, LOT_SIZE, MIN_NOTIONAL, MARKET_LOT_SIZE 
+https://sammchardy.github.io/binance-order-filters/
+
+target_price = f'{purchase_price * profit_pct:0.2f}'
