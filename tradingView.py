@@ -134,10 +134,49 @@ def webSocketStreams(coinList):
     )
 
 
-def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liquidationPrice, risk, leverageSize):
+def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
     components.html(
         """
-        <h4>""" + coinName + """ Perpetual """ + str(leverageSize) + """x (LONG) !!!</h4> 
+        <style>
+            .slidecontainer {
+              width: 100%;
+            }
+            
+            .slider {
+              -webkit-appearance: none;
+              width: 100%;
+              height: 25px;
+              background: #d3d3d3;
+              outline: none;
+              opacity: 0.7;
+              -webkit-transition: .2s;
+              transition: opacity .2s;
+            }
+            
+            .slider:hover {
+              opacity: 1;
+            }
+            
+            .slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 25px;
+              height: 25px;
+              background: #04AA6D;
+              cursor: pointer;
+            }
+            
+            .slider::-moz-range-thumb {
+              width: 25px;
+              height: 25px;
+              background: #04AA6D;
+              cursor: pointer;
+            }
+        </style>
+        <div class="slidecontainer">
+            <input type="range" min="1" max="125" value="50" class="slider" id="myRange">
+            <h4>""" + coinName + """ Perpetual <span id="demo"></span>x (LONG) !!!</h4> 
+        </div>
         <table>
           <tr>
             <th>Unrealized PNL (USDT)</th>
@@ -154,8 +193,8 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice,
           </tr>
           <tr>
             <td>""" + str(baseAssetAmount) + """</td>
-            <td>""" + str(quoteAssetAmount) + """</td>
-            <td> """ + str(risk) + """% </td>
+            <td>""" + str(round(quoteAssetAmount, 2)) + """</td>
+            <td id ="risk"></td>
           </tr>
           <tr>
             <td>Entry Price</td>
@@ -163,30 +202,47 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice,
             <td>Liq Price</td>
           </tr>
           <tr>
-            <td>""" + str(entryPrice) + """</td>
+            <td id ="entry-price"></td>
             <td id ="crypto-price"></td>
-            <td>""" + str(liquidationPrice) + """</td>
+            <td id ="liq-price"></td>
            </tr>
         </table>
         
         <script type="text/javascript">
             let entryPrice = 0
+            let pnlElement = document.getElementById('pnl');
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              output.innerHTML = this.value;
+            }
+            
             let ws = new WebSocket('wss://stream.binance.com:9443/ws/""" + coinName.lower() + """@trade');
             fetch('https://api.binance.com/api/v3/ticker/price?symbol=""" + coinName.upper() + """')
             .then(response =>{
                 return response.json();
             }).then(data =>{
                 entryPrice = data["price"];
+                let entryPriceElement = document.getElementById('entry-price');
+                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2)
+                
+                liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
+                let liqPriceElement = document.getElementById('liq-price');
+                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
+                
+                risk = (1 - (entryPrice / liquidationPrice)) * 100;
+                let riskElement = document.getElementById('risk');
+                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
-            let pnlElement = document.getElementById('pnl');
             let lastPrice = null;
-    
+
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
                 cryptoPriceElement.innerText = price;
-                pnlElement.innerText = parseFloat(price - entryPrice).toFixed(2);
+                pnlElement.innerText = parseFloat((price - entryPrice) * slider.value).toFixed(2);
                 cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';
                 pnlElement.style.color = !entryPrice || price === entryPrice ? 'black' : price > entryPrice ? 'green': 'red';
                 lastPrice = price;
@@ -199,10 +255,49 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice,
     )
 
 
-def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liquidationPrice, risk, leverageSize):
+def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
     components.html(
         """
-        <h4>""" + coinName + """ Perpetual """ + str(leverageSize) + """x (SHORT) !!!</h4> 
+        <style>
+            .slidecontainer {
+              width: 100%;
+            }
+
+            .slider {
+              -webkit-appearance: none;
+              width: 100%;
+              height: 25px;
+              background: #d3d3d3;
+              outline: none;
+              opacity: 0.7;
+              -webkit-transition: .2s;
+              transition: opacity .2s;
+            }
+
+            .slider:hover {
+              opacity: 1;
+            }
+
+            .slider::-webkit-slider-thumb {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 25px;
+              height: 25px;
+              background: #04AA6D;
+              cursor: pointer;
+            }
+
+            .slider::-moz-range-thumb {
+              width: 25px;
+              height: 25px;
+              background: #04AA6D;
+              cursor: pointer;
+            }
+        </style>
+        <div class="slidecontainer">
+            <input type="range" min="1" max="125" value="50" class="slider" id="myRange">
+            <h4>""" + coinName + """ Perpetual <span id="demo"></span>x (LONG) !!!</h4> 
+        </div>
         <table>
           <tr>
             <th>Unrealized PNL (USDT)</th>
@@ -219,8 +314,8 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice
           </tr>
           <tr>
             <td>""" + str(baseAssetAmount) + """</td>
-            <td>""" + str(quoteAssetAmount) + """</td>
-            <td> """ + str(risk) + """% </td>
+            <td>""" + str(round(quoteAssetAmount, 2)) + """</td>
+            <td id ="risk"></td>
           </tr>
           <tr>
             <td>Entry Price</td>
@@ -228,30 +323,47 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice
             <td>Liq Price</td>
           </tr>
           <tr>
-            <td>""" + str(entryPrice) + """</td>
+            <td id ="entry-price"></td>
             <td id ="crypto-price"></td>
-            <td>""" + str(liquidationPrice) + """</td>
+            <td id ="liq-price"></td>
            </tr>
         </table>
 
         <script type="text/javascript">
             let entryPrice = 0
+            let pnlElement = document.getElementById('pnl');
+            var slider = document.getElementById("myRange");
+            var output = document.getElementById("demo");
+            output.innerHTML = slider.value;
+            slider.oninput = function() {
+              output.innerHTML = this.value;
+            }
+
             let ws = new WebSocket('wss://stream.binance.com:9443/ws/""" + coinName.lower() + """@trade');
             fetch('https://api.binance.com/api/v3/ticker/price?symbol=""" + coinName.upper() + """')
             .then(response =>{
                 return response.json();
             }).then(data =>{
                 entryPrice = data["price"];
+                let entryPriceElement = document.getElementById('entry-price');
+                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2)
+
+                liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
+                let liqPriceElement = document.getElementById('liq-price');
+                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
+
+                risk = (1 - (entryPrice / liquidationPrice)) * 100;
+                let riskElement = document.getElementById('risk');
+                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
-            let pnlElement = document.getElementById('pnl');
             let lastPrice = null;
 
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
                 cryptoPriceElement.innerText = price;
-                pnlElement.innerText = parseFloat(entryPrice - price).toFixed(2);
+                pnlElement.innerText = parseFloat((entryPrice - price) * slider.value).toFixed(2);
                 cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';
                 pnlElement.style.color = !entryPrice || price === entryPrice ? 'black' : price < entryPrice ? 'green': 'red';
                 lastPrice = price;

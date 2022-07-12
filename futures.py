@@ -73,26 +73,17 @@ def updateBAChange():
 
 
 def marketOrder(buyOrSell, coinName, baseAsset, quoteAsset):
-    leverageSize = st.slider('Leverage Size', 1, 125, 1, key='leverageSize')
-    getAvailableUSDT()
-
     baseAssetAmount = st.number_input('Amount (' + baseAsset + ')', value=0.0, key="ba", on_change=updateQAChange)
     quoteAssetAmount = st.number_input('Amount (' + quoteAsset + ')', value=0.0, key="qa", on_change=updateBAChange)
 
-    percentage = st.select_slider('', value='100%', options=['0%', '25%', '50%', '75%', '100%'], key='percent', on_change=percentChange)
+    st.select_slider('', value='100%', options=['0%', '25%', '50%', '75%', '100%'], key='percent', on_change=percentChange)
     getAvailableUSDT()
     if buyOrSell == 'Buy':
         if st.button('Buy'):
-            entryPrice = getCoinLatestPrice(coinName)
-            liquidationPrice = entryPrice - (entryPrice / leverageSize)
-            risk = (1 - (entryPrice / liquidationPrice)) * 100
-            longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
+            longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount)
     elif buyOrSell == 'Sell':
         if st.button('Sell'):
-            entryPrice = getCoinLatestPrice(coinName)
-            liquidationPrice = entryPrice + (entryPrice / leverageSize)
-            risk = (1 - (entryPrice/liquidationPrice)) * 100
-            shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
+            shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount)
 
 
 def slOrder(baseAsset, quoteAsset):
