@@ -86,13 +86,13 @@ def marketOrder(buyOrSell, coinName, baseAsset, quoteAsset):
             entryPrice = getCoinLatestPrice(coinName)
             liquidationPrice = entryPrice - (entryPrice / leverageSize)
             risk = (1 - (entryPrice / liquidationPrice)) * 100
-            futuresContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
+            longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
     elif buyOrSell == 'Sell':
         if st.button('Sell'):
             entryPrice = getCoinLatestPrice(coinName)
             liquidationPrice = entryPrice + (entryPrice / leverageSize)
             risk = (1 - (entryPrice/liquidationPrice)) * 100
-            futuresContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
+            shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, round(liquidationPrice, 2), round(abs(risk), 2), leverageSize)
 
 
 def slOrder(baseAsset, quoteAsset):

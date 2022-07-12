@@ -134,10 +134,10 @@ def webSocketStreams(coinList):
     )
 
 
-def futuresContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liquidationPrice, risk, leverageSize):
+def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liquidationPrice, risk, leverageSize):
     components.html(
         """
-        <h4>""" + coinName + """ Perpetual """ + str(leverageSize) + """x!!!</h4> 
+        <h4>""" + coinName + """ Perpetual """ + str(leverageSize) + """x (LONG) !!!</h4> 
         <table>
           <tr>
             <th>Unrealized PNL (USDT)</th>
@@ -193,6 +193,71 @@ def futuresContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liq
             }
         </script>
             
+        <span>TP/SL:</span>
+        """,
+        height=1000,
+    )
+
+
+def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount, entryPrice, liquidationPrice, risk, leverageSize):
+    components.html(
+        """
+        <h4>""" + coinName + """ Perpetual """ + str(leverageSize) + """x (SHORT) !!!</h4> 
+        <table>
+          <tr>
+            <th>Unrealized PNL (USDT)</th>
+            <th>---</th>
+            <th>ROE</th>
+          </tr>
+          <tr>
+            <td id = "pnl" style="font-weight:bold";>---</td>
+          </tr>
+          <tr>
+            <td>Size</td>
+            <td>Margin (USDT)</td>
+            <td>Risk</td>
+          </tr>
+          <tr>
+            <td>""" + str(baseAssetAmount) + """</td>
+            <td>""" + str(quoteAssetAmount) + """</td>
+            <td> """ + str(risk) + """% </td>
+          </tr>
+          <tr>
+            <td>Entry Price</td>
+            <td>Mark Price</td>
+            <td>Liq Price</td>
+          </tr>
+          <tr>
+            <td>""" + str(entryPrice) + """</td>
+            <td id ="crypto-price"></td>
+            <td>""" + str(liquidationPrice) + """</td>
+           </tr>
+        </table>
+
+        <script type="text/javascript">
+            let entryPrice = 0
+            let ws = new WebSocket('wss://stream.binance.com:9443/ws/""" + coinName.lower() + """@trade');
+            fetch('https://api.binance.com/api/v3/ticker/price?symbol=""" + coinName.upper() + """')
+            .then(response =>{
+                return response.json();
+            }).then(data =>{
+                entryPrice = data["price"];
+            })
+            let cryptoPriceElement = document.getElementById('crypto-price');
+            let pnlElement = document.getElementById('pnl');
+            let lastPrice = null;
+
+            ws.onmessage = (event) => {
+                let cryptoObject = JSON.parse(event.data);
+                let price = parseFloat(cryptoObject.p)
+                cryptoPriceElement.innerText = price;
+                pnlElement.innerText = parseFloat(entryPrice - price).toFixed(2);
+                cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';
+                pnlElement.style.color = !entryPrice || price === entryPrice ? 'black' : price < entryPrice ? 'green': 'red';
+                lastPrice = price;
+            }
+        </script>
+
         <span>TP/SL:</span>
         """,
         height=1000,
