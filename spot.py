@@ -1,11 +1,13 @@
-import streamlit as st
+from styles import *
+from db import *
 from tradingView import *
-from datetime import datetime
 import requests
 import json
 import pandas as pd
-from db import *
-from styles import *
+from datetime import datetime, timedelta
+import time
+import calendar
+
 
 def spot():
     # coin selection
@@ -14,113 +16,204 @@ def spot():
     baseAsset = str(bqAsset[0])
     quoteAsset = str(bqAsset[1])
 
+    streamCryptoPrice(coinName)
     run_tradingView(coinName)
+    # get quote asset price, should be streaming
+    st.session_state.coinPrice = getCoinLatestPrice(coinName)
+    add_data(baseAsset, "0")
+    add_data(quoteAsset, "0")
+    st.session_state.qavalue = get_coin_balance(quoteAsset)
+    st.session_state.bavalue = get_coin_balance(baseAsset)
 
-    active_tab = tabs(["Buy", "Sell", "Top up"])
+    buyOrSellOption = buySellButtons()
+    if buyOrSellOption == 'Buy':
+        buySellOption("Buy", coinName, baseAsset, quoteAsset)
+    elif buyOrSellOption == 'Sell':
+        buySellOption("Sell", coinName, baseAsset, quoteAsset)
 
-    now = datetime.now()  # current date and time
-    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-    coin_transaction_date = date_time
-    if active_tab == 'Buy':
-        buySellOption(coin_transaction_date, "Buy", coinName, baseAsset, quoteAsset)
-    elif active_tab == 'Sell':
-        buySellOption(coin_transaction_date, "Sell", coinName, baseAsset, quoteAsset)
-    elif active_tab == 'Top up':
-        topUpAmount = st.number_input("Top up amount", min_value=0.0, key="topUpAmount")
-        if st.button("Top up"):
-            add_data(coin_transaction_date, "USDT", "", topUpAmount, "")
-            usdtBal = get_coin_balance("USDT")
-            totalUSDT = float(usdtBal[0][0]) + topUpAmount
-            update_coin_balance("", str(totalUSDT), "", "USDT")
-            st.success("USDT has been topped up successfully!")
-
-            st.write("USDT Balance: " + str(usdtBal[0][0]))
-
-    listing = view_all_data()
-    df = pd.DataFrame(listing)
-    df.columns = ['Date', 'Coin Name', 'Buy Price', 'Balance', 'Quote Price']
-    st.info("Wallets")
-    st.table(df[['Coin Name', 'Balance']])
-
-    listing1 = view_all_transaction_data()
-    df1 = pd.DataFrame(listing1)
-    df1 = df1.reset_index(drop=True)
-    df1.columns = ['buySellString', 'coin_transaction_date', 'baseAsset', \
-                   'coinPrice', 'totalCoins', 'totalCost']
-    # df1["coin_transaction_date"] = pd.to_datetime(df1["coin_transaction_date"])
-    df1 = df1.sort_values(by="coin_transaction_date", ascending=False)
-    st.info("Transaction")
-    st.table(df1)
-
-    if st.button('Drop Database'):
-        drop_db()
-        st.info("DB has been dropped!")
 
 def selectCoin():
+    col1, col2 = st.columns(2)
     marketpairsList = []
     dataMarketPairs = GetMarketPairs()
+
     for i in range(0, len(dataMarketPairs['symbols'])):
         marketpairsList.append(dataMarketPairs['symbols'][i]['symbol'])
-    coinOption = st.multiselect("Select a coin", marketpairsList, default="BTCUSDT")
-    coinName = str(coinOption[0])
+
+    with col1:
+        coinOption = st.multiselect("", marketpairsList, default="BTCUSDT")
+        coinName = str(coinOption[0])
+    with col2:
+        if st.button("⭐"):
+            addFavourites(coinName)
 
     return coinName
 
-def buySellOption(coin_transaction_date, buyOrSell, coinName, baseAsset, quoteAsset):
-    totalCoins = 0
-    option = st.selectbox('', ('Limit', 'Market', 'Stop Limit', 'OCO'))
-    coinOrUSDT = st.selectbox("", ('Amount', 'Total'))
 
+def orderTypes():
+    orderType = st.selectbox('', ('Limit', 'Market', 'Stop Limit', 'OCO'), index=2)
+    return orderType
+
+
+def getAvailableUSDT():
+    st.write("Avbl: " + str("{:.2f}".format(get_coin_balance("USDT"))) + " USDT")
+
+
+def buySellOption(buyOrSell, coinName, baseAsset, quoteAsset):
+    # try:
+    orderTypeSelected = orderTypes()
+
+    if orderTypeSelected == 'Limit':
+        limitOrder(buyOrSell, coinName, baseAsset, quoteAsset)
+    elif orderTypeSelected == 'Market':
+        marketOrder(buyOrSell, coinName, baseAsset, quoteAsset)
+    elif orderTypeSelected == 'Stop Limit':
+        stopLimitOrder(buyOrSell, coinName, baseAsset, quoteAsset)
+    elif orderTypeSelected == 'OCO':
+        ocoOrder(baseAsset)
+
+# except:
+#    pass
+
+# =========================== Limit order =========================== #
+def getBuyLimitOrderPercentage():
+    if st.session_state.price > 0:
+        percentage = st.session_state.percent.replace("%", "")
+        st.session_state.usdt = (int(percentage) / 100) * st.session_state.qavalue
+        st.session_state.baseasset = st.session_state.usdt / st.session_state.price
+
+
+def getSellLimitOrderPercentage():
+    if st.session_state.baseasset > 0:
+        percentage = st.session_state.percent.replace("%", "")
+        st.session_state.usdt = (int(percentage) / 100) * (st.session_state.bavalue * st.session_state.price)
+        st.session_state.baseasset = st.session_state.usdt / st.session_state.price
+
+
+def updatePrice():
+    st.session_state.usdt = st.session_state.price * st.session_state.baseasset
+
+
+# https://www.geeksforgeeks.org/different-ways-to-iterate-over-rows-in-pandas-dataframe/
+def limitOrder(buyOrSell, coinName, baseAsset, quoteAsset):
+    coinPrice = st.number_input('Price (' + baseAsset + ')', value=0.0, key="price", on_change=updatePrice)
+
+    if buyOrSell == 'Buy':
+        totalCoins = st.number_input('Amount (' + baseAsset + ')', value=0.0, key="baseasset", on_change=updatePrice)
+        st.select_slider('', value='100%', options=['25%', '50%', '75%', '100%'], key='percent',
+                         on_change=getBuyLimitOrderPercentage)
+        st.number_input('', value=st.session_state.qavalue, key='usdt')
+    elif buyOrSell == 'Sell':
+        totalCoins = st.number_input('Amount (' + baseAsset + ')', value=st.session_state.bavalue, key="baseasset",
+                                     on_change=updatePrice)
+        st.select_slider('', value='100%', options=['25%', '50%', '75%', '100%'], key='percent',
+                         on_change=getSellLimitOrderPercentage)
+        st.number_input('', value=st.session_state.usdt, key='usdt')
+
+    getAvailableUSDT()
+    updateCryptoDB(buyOrSell, coinName, "Limit", baseAsset, quoteAsset, coinPrice, totalCoins)
+    limitOrderDT = displayPendingLimitOrder()
+
+    format_data = "%d/%m/%Y, %H:%M:%S"
+    for index, row in limitOrderDT.iterrows():
+        side = row["Side"]
+        coinName = row["Pair"]
+        orderType = row["Type"]
+        bqAsset = getBaseQuoteAsset(coinName)
+        baseAsset = str(bqAsset[0])
+        quoteAsset = str(bqAsset[1])
+        coinPrice = row["Price"]
+        totalCoins = row["Amount"]
+
+        dateString = datetime.strptime(row["Date"], format_data)
+        d = dateString - timedelta(days=5)
+        dateInMS = get_unix_ms_from_date(d)
+        df = getKLineData(coinName, dateInMS)
+        minimum = df[4].min()
+        maximum = df[4].max()
+
+        if float(minimum) <= float(coinPrice) <= float(maximum):
+            updateCryptoDBLimitOrder(side, coinName, "Limit", baseAsset, quoteAsset, coinPrice, totalCoins)
+            delete_data_by_ID(index)
+            st.success("Limit order filled successfully")
+
+
+def displayPendingLimitOrder():
+    # Show pending limit orders
+    columnName = ['ID', 'Date', 'Pair', 'Type', 'Side', 'Price', 'Amount', 'Filled', 'Total', 'Trigger Conditions']
+    limitOrderDT = select_all_limit_records()
+    limitOrderDT = pd.DataFrame(limitOrderDT, columns=columnName)
+    limitOrderDT = limitOrderDT.set_index('ID')
+    st.table(limitOrderDT)
+    return limitOrderDT
+
+
+# =========================== Market order =========================== #
+def getBuyPercentage():
+    percentage = st.session_state.percent.replace("%", "")
+    st.session_state.qa = st.session_state.qavalue * (int(percentage) / 100)
+    st.session_state.ba = st.session_state.qa / st.session_state.coinPrice
+
+
+def getSellPercentage():
+    percentage = st.session_state.percent.replace("%", "")
+    st.session_state.ba = st.session_state.bavalue * (int(percentage) / 100)
+    st.session_state.qa = st.session_state.ba * st.session_state.coinPrice
+
+
+def updateAmount():
+    st.session_state.ba = float(st.session_state.qa) / st.session_state.coinPrice
+
+
+def updateTotal():
+    st.session_state.qa = float(st.session_state.ba) * st.session_state.coinPrice
+
+
+def marketOrder(buyOrSell, coinName, baseAsset, quoteAsset):
+    totalCoins = st.number_input(baseAsset, key="ba", on_change=updateTotal)
+    st.number_input(quoteAsset, key="qa", on_change=updateAmount)
+
+    if buyOrSell == 'Buy':
+        st.select_slider('', value='100%', options=['25%', '50%', '75%', '100%'], key='percent',
+                         on_change=getBuyPercentage)
+    elif buyOrSell == 'Sell':
+        st.select_slider('', value='100%', options=['25%', '50%', '75%', '100%'], key='percent',
+                         on_change=getSellPercentage)
+    getAvailableUSDT()
+    updateCryptoDB(buyOrSell, coinName, "Market", baseAsset, quoteAsset, st.session_state.coinPrice, totalCoins)
+
+
+def updateTotalUSDT():
+    st.session_state.totalUSDT = st.session_state.limitUSDT * st.session_state.baseAssetAmount
+
+
+def stopLimitOrder(buyOrSell, coinName, baseAsset, quoteAsset):
     coinPrice = getCoinLatestPrice(coinName)
-    usdtBal = get_coin_balance("USDT")
+    stopAmount = st.text_input('', placeholder="Stop (USDT)", key="stopUSDT")
+    limitAmount = st.number_input('Limit (USDT)', value=coinPrice, key="limitUSDT", on_change=updateTotalUSDT)
+    amount = st.number_input("Amount (" + baseAsset + ")", key="baseAssetAmount", on_change=updateTotalUSDT)
+    st.select_slider('', value='100%', options=['25%', '50%', '75%', '100%'], key='percent')
+    totalUSDT = st.number_input('Total (USDT)', key="totalUSDT")
+    getAvailableUSDT()
+    updateCryptoDB(buyOrSell, coinName, "Stop Limit", baseAsset, quoteAsset, coinPrice, amount)
 
-    if coinOrUSDT == 'Amount':
-        totalCoins = st.number_input(baseAsset, min_value=0.0, key="buyAmount")
-    elif coinOrUSDT == 'Total':
-        totalQuoteAsset = st.number_input(quoteAsset, min_value=0.0, key="buyTotal")
-        totalCoins = float(totalQuoteAsset) / float(coinPrice)
 
-    st.write("Avbl: ")
-    st.select_slider('', options=['25%', '50%', '75%', '100%'])
+def ocoOrder(baseAsset):
+    stopAmount = st.text_input('', placeholder="Price (USDT)", key="stopUSDT")
+    limitAmount = st.text_input('', placeholder="Stop (USDT)", key="limitUSDT")
+    limitAmount = st.text_input('', placeholder="Limit (USDT)", key="limitUSDT")
+    amount = st.text_input('', placeholder="Amount (" + baseAsset + ")", key="baseAssetAmount")
+    # usdtAmountUsed = getPercentage(get_coin_balance("USDT"))
+    totalUSDT = st.text_input('', placeholder="Total (USDT)", key="totalUSDT")
+    getAvailableUSDT()
 
-    if buyOrSell == "Buy":
-        if st.button('Buy'):
-            buySell("Bought", coin_transaction_date, baseAsset, quoteAsset, coinPrice, totalCoins)
-            st.success('Buy Successfully')
-    if buyOrSell == "Sell":
-        if st.button('Sell'):
-            buySell("Sold", coin_transaction_date, baseAsset, quoteAsset, coinPrice, totalCoins)
-            st.success('Sell Successfully')
-
-def buySell(buySellString, coin_transaction_date, baseAsset, quoteAsset, coinPrice, totalCoins):
-    add_data(coin_transaction_date, baseAsset, "", "0", "")
-    add_data(coin_transaction_date, quoteAsset, "", "0", "")
-    totalBaseAsset = get_coin_balance(baseAsset)
-    totalQuoteAsset = get_coin_balance(quoteAsset)
-    totalCostString = 0
-
-    if buySellString == "Bought":
-        totalBaseAsset = float(totalBaseAsset[0][0]) + totalCoins
-        totalQuoteAsset = float(totalQuoteAsset[0][0]) - (float(coinPrice)*totalCoins)
-    elif buySellString == "Sold":
-        totalBaseAsset = float(totalBaseAsset[0][0]) - totalCoins
-        totalQuoteAsset = float(totalQuoteAsset[0][0]) + (float(coinPrice)*totalCoins)
-
-    # create transaction record to db
-    totalCost = float(coinPrice) * float(totalCoins)
-    totalCostString = str(totalCost) + " " + str(quoteAsset)
-    add_transaction_data(buySellString, coin_transaction_date, baseAsset, coinPrice, totalCoins, totalCostString)
-
-    quoteAssetString = str((float(coinPrice)*totalBaseAsset)) + " " + str(quoteAsset)
-
-    update_coin_balance(coinPrice, str(totalQuoteAsset), "", quoteAsset)
-    update_coin_balance(coinPrice, str(totalBaseAsset), quoteAssetString, baseAsset)
 
 def GetMarketPairs():
     result = requests.get('https://api.binance.com/api/v3/exchangeInfo')
     if result.ok:
         json_data = json.loads(result.text)
         return json_data
+
 
 def getBaseQuoteAsset(coinName):
     result = requests.get('https://api.binance.com/api/v3/exchangeInfo?symbol=' + coinName)
@@ -131,7 +224,30 @@ def getBaseQuoteAsset(coinName):
 
     return [baseAsset, quoteAsset]
 
+
 def getCoinLatestPrice(coinName):
-    result = requests.get('https://api.binance.com/api/v3/ticker/price?symbol='+str(coinName))
+    result = requests.get('https://api.binance.com/api/v3/ticker/price?symbol=' + str(coinName))
     json_data = json.loads(result.text)
-    return json_data["price"]
+    return float(json_data["price"])
+
+
+def getKLineData(coinPair, startDateMS):
+    url = 'https://api.binance.com/api/v3/klines'
+    params = {
+        'symbol': coinPair,
+        'interval': '1m',
+        'startTime': startDateMS,
+        'endTime': getCurrentMS()
+    }
+    response = requests.get(url, params=params)
+    df = pd.DataFrame.from_dict(response.json())
+    return df
+
+
+def getCurrentMS():
+    return get_unix_ms_from_date(datetime.now())
+
+
+# https://betterprogramming.pub/how-to-easily-fetch-your-binance-historical-trades-using-python-174a6569cebd
+def get_unix_ms_from_date(date):
+    return int(calendar.timegm(date.timetuple()) * 1000 + date.microsecond / 1000)

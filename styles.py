@@ -1,42 +1,57 @@
 import streamlit as st
 import streamlit.components.v1 as stc
+from streamlit_option_menu import option_menu
+from spot import *
 
 def displayPageTitle(title):
     LOGO_BANNER = """
-        <div style="background-color:#464e5f;padding:3px;border-radius:10px";>
+        <div style="background-color:#464e5f;padding:3px;border-radius:15px 50px 30px 5px";>
         <h1 style="color:white;text-align:center;"> """ + title + """ </h1>
         </div> """
+    stc.html(LOGO_BANNER, height=90)
 
-    stc.html(LOGO_BANNER)
+def optionMenu():
+    option = option_menu("Binance Simulator",
+                         ["Favorites", "Spot", "Futures", "Wallet", "Transaction Record", "About"],
+                         icons=['star-fill', 'graph-up', 'graph-up-arrow', 'wallet', 'card-checklist',
+                                'question-circle'],
+                         orientation="horizontal", menu_icon="currency-bitcoin", default_index=0,
+                         styles={
+                             "container": {"font-weight": "bold", "padding": "2!important", "background-color": "#fafafa"},
+                             "icon": {"color": "orange", "font-size": "12px"},
+                             "nav-link": {"font-size": "13px", "text-align": "left", "margin": "0px",
+                                          "--hover-color": "#eee"},
+                             "nav-link-selected": {"background-color": "#02ab21"},
+                         }
+                         )
+    return option
 
-def tabs(default_tabs=[], default_active_tab=0):
-        if not default_tabs:
-            return None
-        active_tab = st.radio("", default_tabs, index=default_active_tab)
-        child = default_tabs.index(active_tab) + 1
-        st.markdown("""  
-            <style type="text/css">
-            div[role=radiogroup] > label > div:first-of-type {
-               display: none
-            }
-            div[role=radiogroup] {
-                flex-direction: unset
-            }
-            div[role=radiogroup] label {        
-                border: 1px solid #999;
-                background: #EEE;
-                padding: 4px 20px 4px 10px;
-                border-radius: 4px 4px 0 0;
-                position: relative;
-                top: 1px;
-                }
-            div[role=radiogroup] label:nth-child(""" + str(child) + """) {    
-                background: #90ee90 !important;
-                border-bottom: 1px solid transparent;
-            }         
-            .css-qrbaxs {
-                min-height: 0px !important;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        return active_tab
+def buySellButtons():
+    option = option_menu("",
+                         ["Buy", "Sell"],
+                         icons=['bag-fill', 'currency-dollar'],
+                         orientation="horizontal", default_index=0,
+                         styles={
+                             "container": {"padding": "0!important", "background-color": "#fafafa"},
+                             "icon": {"color": "orange", "font-size": "16px"},
+                             "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
+                                          "--hover-color": "#eee"},
+                             "nav-link-selected": {"background-color": "#FF0000", "border-radius": "15px / 50px"}
+                         }
+                         )
+    return option
+
+def customMenu(tabList):
+    option = option_menu("",
+                         tabList,
+                         orientation="horizontal", default_index=0,
+                         styles={
+                             "container": {"padding": "0!important", "background-color": "#EEE"},
+                             "icon": {"color": "orange", "font-size": "16px"},
+                             "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
+                                          "--hover-color": "#eee", "color": "#000000"},
+                             "nav-link-selected": {"background-color": "#D3D3D3", "border-radius": "15px / 50px"}
+                         }
+                         )
+    return option
+

@@ -10,76 +10,57 @@ from futures import *
 from wallet import *
 from transactionRecord import *
 from about import *
-from styles import *
 
 img = Image.open("images/bitcoin.png").convert('RGB').save('Logo.jpeg')
-PAGE_CONFIG = {"page_title": "Trading Simulator", "page_icon":img, "layout":"wide", "initial_sidebar_state": "expanded" }
+PAGE_CONFIG = {"page_title": "Trading Simulator", "page_icon": img, "layout": "centered",
+               "initial_sidebar_state": "collapsed"}
 st.set_page_config(**PAGE_CONFIG)
 
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
+            .css-qrbaxs {min-height: 0em;}
+            .css-x46z32 {gap: 0rem;}
+            .css-18e3th9 {padding: 2rem 1rem 10rem;}
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 def main():
-    try:
-        # create db
-        create_table()
-        create_transaction_table()
+    # try:
+    local_css("style.css")
 
-        with st.sidebar:
-            option = optionMenu()
+    # create db
+    create_table()
+    create_transaction_table()
+    create_favorites_table()
+    create_limitorder_table()
+    create_futures_transaction_table()
+    add_data("USDT", "0")
 
-        if option == "Favorites":
-            displayPageTitle("Favorites")
-            favorites()
-        elif option == "Spot":
-            displayPageTitle("Spot Trading")
-            spot()
-        elif option == "Futures":
-            displayPageTitle("Futures Trading")
-            futures()
-        elif option == "Wallet":
-            displayPageTitle("Wallet")
-            wallet()
-        elif option == "Transaction Record":
-            displayPageTitle("Transaction Record")
-            transactionRecord()
-        elif option == "About":
-            displayPageTitle("About Binance Simulator")
-            about()
+    option = optionMenu()
 
-    except:
-        pass
+    if option == "Favorites":
+        favorites()
+    elif option == "Spot":
+        spot()
+    elif option == "Futures":
+        futures()
+    elif option == "Wallet":
+        wallet()
+    elif option == "Transaction Record":
+        transactionRecord()
+    elif option == "About":
+        about()
 
-def optionMenu():
-    option = option_menu("Binance",
-                         ["Favorites", "Spot", "Futures", "Wallet", "Transaction Record", "About"],
-                         icons=['star-fill', 'graph-up', 'graph-up-arrow', 'wallet', 'card-checklist',
-                                'question-circle'],
-                         menu_icon="currency-bitcoin", default_index=0,
-                         styles={
-                             "container": {"padding": "5!important", "background-color": "#fafafa"},
-                             "icon": {"color": "orange", "font-size": "25px"},
-                             "nav-link": {"font-size": "16px", "text-align": "left", "margin": "0px",
-                                          "--hover-color": "#eee"},
-                             "nav-link-selected": {"background-color": "#02ab21"},
-                         }
-                         )
-    return option
+
+# except:
+#   pass
+
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-
-
-

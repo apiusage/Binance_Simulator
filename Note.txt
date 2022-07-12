@@ -3,15 +3,234 @@ streamlit run main.py
 
 https://github.com/sjhhh3/binance-simulator
 
-
+=======================================================
+1. Create requirements.txt file
 pip install pipreqs
 pipreqs --encoding=utf8 C:\Users\bston\Desktop\Trading_Simulator --force
 
+2. Push to Github
+git init
+git add .
+git status
+git commit -m "Updates"
+git remote add origin https://github.com/apiusage/Binance_Simulator.git
+git remote set-url origin https://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@github.com/apiusage/Binance_Simulator.git
+git push -u origin master
+
+=======================================================
+https://warez.ge/
+
+STREAMLIT TRICKS - Web App RERUNS on every WIDGET CLICKS ? Here's WHAT-TO-DO
+https://www.youtube.com/watch?v=dPdB7zyGttg
+https://www.youtube.com/c/Avra_b/videos (sign up, login, AgGrid)
+
+Build a Stock Trend Prediction Web App in Python | GeeksforGeeks
+https://www.youtube.com/watch?v=s3CnE2tqQdo
+
+How to Add a User Authentication Service (Login Form) in Streamlit + Database
+https://www.youtube.com/watch?v=eCbH2nPL9sU
+
+Creating flowcharts and graphs in Streamlit using python
+https://www.youtube.com/watch?v=b-50Qb4a-b0
+
+Portfolio Management w/ Python & Streamlit
+https://github.com/AnaIitico/grayscale_analysis
+
+Building a buzzing stocks news feed using NLP and Streamlit | Named Entity Recognition & Linking
+https://www.youtube.com/watch?v=G5ycs1hFSKk
+
+How To Add A Contact Form To Your Streamlit App
+https://www.youtube.com/watch?v=FOULV9Xij_8
+
+Real-time analytics dashboard with Streamlit, Pinot & Kafka | Mark Needham | Conf42 Python 2022
+https://www.youtube.com/watch?v=eXg9m2TM0dE
+
+Bitcoin and Ethereum Outlook (A Discussion With VentureFounder)
+https://www.youtube.com/watch?v=dYVYJb5WnL0
+https://cryptoquant.com/profile/u/venturefounder
+
+How to build a Stock Recommendation System with Python - Part II: MACD, Golden Cross and RSI Signals
+https://www.youtube.com/watch?v=FRO6V8bj_ko
+
+Tulip Indicators - A library to calculate technical indicators like RSI,MACD etc.
+https://www.youtube.com/watch?v=G03vE4ZVrNk
+
+ML for Trading - 2nd Edition
+https://github.com/stefan-jansen/machine-learning-for-trading
+
+ML for Trading - AI for Leaders - Stefan Jansen @ Correlation One
+https://www.youtube.com/watch?v=1nk6C_D8o-c
+
+Binance Python API – A Step-by-Step Guide
+https://algotrading101.com/learn/binance-python-api-guide/
 
 Menu
 https://medium.com/codex/create-a-multi-page-app-with-the-new-streamlit-option-menu-component-3e3edaf7e7ad
 
+https://www.udemy.com/course/algorithmic-bot-trading-on-futures/
+
+Reading HTML tables with Pandas
+https://pbpython.com/pandas-html-table.html
+
 Filter failure whether it be PRICE_FILTER, LOT_SIZE, MIN_NOTIONAL, MARKET_LOT_SIZE 
 https://sammchardy.github.io/binance-order-filters/
 
+Is it Possible to Add a Navigation Bar to Streamlit Apps? | Streamlit #29
+https://www.youtube.com/watch?v=hoPvOIJvrb8
+
 target_price = f'{purchase_price * profit_pct:0.2f}'
+
+
+How to Visualize Orderbook of any coin in browser
+https://www.youtube.com/watch?v=z3puILfvewY
+
+https://www.youtube.com/watch?v=4aqx5P2Y38U
+
+wss://stream.binance.com:9443/ws/btcusdt@trade
+
+https://www.youtube.com/watch?v=jbJuOQ8GskM
+https://www.youtube.com/watch?v=ml3jGc8RqMk
+
+https://tradingview.brianthe.dev/
+https://github.com/brian-the-dev/python-tradingview-ta
+https://github.com/brian-the-dev
+
+
+Tradingview Technical Indicators Integrated in Python [Intro]
+https://www.youtube.com/watch?v=3WIcaCMJoqA
+
+Supertrend 3 - Detecting Uptrends and Downtrends with Python
+https://www.youtube.com/watch?v=21tLM3XrU9I
+
+How are ALL Cryptocurrencies correlated? Correlation Analysis in Python
+https://www.youtube.com/watch?v=M64KcWgNfJg
+
+get current price
+https://stackoverflow.com/questions/65864645/how-to-use-binance-api-simple-get-price-by-ticker
+
+
+    def tabs(default_tabs=[], default_active_tab=0):
+        if not default_tabs:
+            return None
+        active_tab = st.radio("", default_tabs, index=default_active_tab)
+        child = default_tabs.index(active_tab) + 1
+        st.markdown("""  
+            <style type="text/css">
+            div[role=radiogroup] > label > div:first-of-type {
+               display: none
+            }
+            div[role=radiogroup] {
+                flex-direction: unset
+            }
+            div[role=radiogroup] label {        
+                border: 1px solid #999;
+                background: #EEE;
+                padding: 4px 20px 4px 10px;
+                border-radius: 4px 4px 0 0;
+                position: relative;
+                top: 1px;
+                }
+            div[role=radiogroup] label:nth-child(""" + str(child) + """) {    
+                background: #90ee90 !important;
+                border-bottom: 1px solid transparent;
+            }         
+            .css-qrbaxs {
+                min-height: 0px !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        return active_tab
+
+
+
+
+
+   elif active_tab == 'Top up':
+        topUpAmount = st.number_input("Top up amount", min_value=0.0, key="topUpAmount")
+        if st.button("Top up"):
+            add_data(coin_transaction_date, "USDT", "", topUpAmount, "")
+            usdtBal = get_coin_balance("USDT")
+            totalUSDT = float(usdtBal[0][0]) + topUpAmount
+            update_coin_balance("", str(totalUSDT), "", "USDT")
+            st.success("USDT has been topped up successfully!")
+
+            st.write("USDT Balance: " + str(usdtBal[0][0]))
+
+
+import datetime
+
+#Date Input
+
+my_date = st.date_input("Select date", value = datetime.date(1995, 6, 15), 
+                          min_value = datetime.date(1990, 1, 1), 
+                          max_value = datetime.date(2000, 12, 31))
+st.write(my_date)
+
+
+
+4 ways of styling Streamlit widgets
+https://www.youtube.com/watch?v=OVgPJEMDkak
+
+
+https://www.angularfix.com/2021/10/how-to-style-button-in-streamlit.html
+
+
+
+def update_first():
+    st.session_state.second = str(float(st.session_state.first) * 10)
+    st.text(f"Change values: {st.session_state.second}")
+
+def update_second():
+    st.session_state.first = st.session_state.second
+
+
+st.title('🪞 Mirrored Widgets using Session State')
+st.select_slider(
+    'Select a color of the rainbow',
+    options=['25', '50', '75', '100'], key='first', on_change=update_first)
+st.text_input(label='Textbox 2', key='second', on_change=update_second)
+
+
+https://docs.streamlit.io/library/advanced-features/session-state
+
+
+def on_message(ws, message):
+    # creating a single-element container.
+    json_message = json.loads(message)
+    price = json_message['p']
+    placeholder = st.empty()
+    with placeholder.container():
+        st.metric("", value=price)
+    # Clear all those elements:
+    time.sleep(5)
+    placeholder.empty()
+
+def on_error(ws, error):
+    st.warning(error)
+
+def on_close(close_msg):
+    st.warning("### closed ###" + close_msg)
+
+def streamKline(currency):
+    websocket.enableTrace(False)
+    socket = f'wss://stream.binance.com:9443/ws/{currency}@trade'
+    ws = websocket.WebSocketApp(socket,
+                                on_message=on_message,
+                                on_error=on_error,
+                                on_close=on_close)
+
+    ws.run_forever()
+
+
+
+def getCurrentTimeStamp():
+    currentDay = datetime.now().day
+    currentMonth = datetime.now().month
+    currentYear = datetime.now().year
+    today = datetime(currentYear, currentMonth, currentDay)
+    timeStamp = convertDateToTimeStamp(today)
+    return timeStamp
+
+
+def convertDateToTimeStamp(dateString):
+    return dateString.replace(tzinfo=pytz.utc).timestamp() * 1000

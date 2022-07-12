@@ -1,0 +1,16 @@
+.stButton>button {
+    color: #FFF;
+    font-weight:bold;
+    background-color:#32CD32;
+}
+
+.stMultiSelect>.st-b7 {
+    width:100%;
+    margin-top: -9px !important;
+}
+
+.st-c4 {
+    min-height: 10px;
+}
+
+
