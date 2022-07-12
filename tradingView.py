@@ -180,11 +180,13 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
         <table>
           <tr>
             <th>Unrealized PNL (USDT)</th>
-            <th>---</th>
+            <th></th>
             <th>ROE</th>
           </tr>
           <tr>
             <td id = "pnl" style="font-weight:bold";>---</td>
+            <th></th>
+            <td id = "roe" style="font-weight:bold";>---</td>
           </tr>
           <tr>
             <td>Size</td>
@@ -236,15 +238,19 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
+            let roeElement = document.getElementById('roe');
             let lastPrice = null;
 
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
                 cryptoPriceElement.innerText = price;
+                roeValue = parseFloat((((price / entryPrice) - 1) * 100) * slider.value).toFixed(2);
+                roeElement.innerText = roeValue + "%";
                 pnlElement.innerText = parseFloat((price - entryPrice) * slider.value).toFixed(2);
                 cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';
                 pnlElement.style.color = !entryPrice || price === entryPrice ? 'black' : price > entryPrice ? 'green': 'red';
+                roeElement.style.color = roeValue >= 0 ? 'green' : 'red';
                 lastPrice = price;
             }
         </script>
@@ -301,11 +307,13 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
         <table>
           <tr>
             <th>Unrealized PNL (USDT)</th>
-            <th>---</th>
+            <th></th>
             <th>ROE</th>
           </tr>
           <tr>
             <td id = "pnl" style="font-weight:bold";>---</td>
+            <th></th>
+            <td id = "roe" style="font-weight:bold";>---</td>
           </tr>
           <tr>
             <td>Size</td>
@@ -347,7 +355,7 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 entryPrice = data["price"];
                 let entryPriceElement = document.getElementById('entry-price');
                 entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2);
-
+                
                 liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value));
                 let liqPriceElement = document.getElementById('liq-price');
                 liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
@@ -357,15 +365,19 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
+            let roeElement = document.getElementById('roe');
             let lastPrice = null;
 
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
                 cryptoPriceElement.innerText = price;
+                roeValue = parseFloat((((price / entryPrice) - 1) * 100) * slider.value).toFixed(2);
+                roeElement.innerText = roeValue + "%";
                 pnlElement.innerText = parseFloat((entryPrice - price) * slider.value).toFixed(2);
                 cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';
                 pnlElement.style.color = !entryPrice || price === entryPrice ? 'black' : price < entryPrice ? 'green': 'red';
+                roeElement.style.color = roeValue >= 0 ? 'green' : 'red';
                 lastPrice = price;
             }
         </script>
