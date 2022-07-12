@@ -225,7 +225,7 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
             }).then(data =>{
                 entryPrice = data["price"];
                 let entryPriceElement = document.getElementById('entry-price');
-                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2)
+                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2);
                 
                 liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
                 let liqPriceElement = document.getElementById('liq-price');
@@ -346,9 +346,9 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
             }).then(data =>{
                 entryPrice = data["price"];
                 let entryPriceElement = document.getElementById('entry-price');
-                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2)
+                entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2);
 
-                liquidationPrice = entryPrice + (entryPrice / parseFloat(slider.value));
+                liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value));
                 let liqPriceElement = document.getElementById('liq-price');
                 liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
 
