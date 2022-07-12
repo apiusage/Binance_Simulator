@@ -348,7 +348,7 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 let entryPriceElement = document.getElementById('entry-price');
                 entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2)
 
-                liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
+                liquidationPrice = entryPrice + (entryPrice / parseFloat(slider.value));
                 let liqPriceElement = document.getElementById('liq-price');
                 liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
 
