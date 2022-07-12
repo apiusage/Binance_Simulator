@@ -296,7 +296,7 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
         </style>
         <div class="slidecontainer">
             <input type="range" min="1" max="125" value="50" class="slider" id="myRange">
-            <h4>""" + coinName + """ Perpetual <span id="demo"></span>x (LONG) !!!</h4> 
+            <h4>""" + coinName + """ Perpetual <span id="demo"></span>x (SHORT) !!!</h4> 
         </div>
         <table>
           <tr>
