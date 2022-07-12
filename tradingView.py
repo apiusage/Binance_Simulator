@@ -372,7 +372,7 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
                 cryptoPriceElement.innerText = price;
-                roeValue = parseFloat((((price / entryPrice) - 1) * 100) * slider.value).toFixed(2);
+                roeValue = parseFloat((((entryPrice / price) - 1) * 100) * slider.value).toFixed(2);
                 roeElement.innerText = roeValue + "%";
                 pnlElement.innerText = parseFloat((entryPrice - price) * slider.value).toFixed(2);
                 cryptoPriceElement.style.color = !lastPrice || lastPrice === price ? 'black' : price > lastPrice ? 'green': 'red';

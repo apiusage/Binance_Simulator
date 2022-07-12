@@ -20,6 +20,13 @@ git push -u origin master
 =======================================================
 https://warez.ge/
 
+Futures Formula: 
+(2.71557 / 1.795) - 1 = 0.5128
+0.5128 * 100 * 8 
+
+CryptoBase: A Crypto Prediction
+Search "streamlit crypto" in Github
+
 STREAMLIT TRICKS - Web App RERUNS on every WIDGET CLICKS ? Here's WHAT-TO-DO
 https://www.youtube.com/watch?v=dPdB7zyGttg
 https://www.youtube.com/c/Avra_b/videos (sign up, login, AgGrid)
