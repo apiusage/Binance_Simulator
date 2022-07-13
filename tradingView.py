@@ -363,7 +363,7 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
-                liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value-1));
+                liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value));
                 let liqPriceElement = document.getElementById('liq-price');
                 liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
                 
