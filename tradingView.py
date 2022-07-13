@@ -228,14 +228,6 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 entryPrice = data["price"];
                 let entryPriceElement = document.getElementById('entry-price');
                 entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2);
-                
-                liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
-                let liqPriceElement = document.getElementById('liq-price');
-                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
-                
-                risk = (1 - (entryPrice / liquidationPrice)) * 100;
-                let riskElement = document.getElementById('risk');
-                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
             let roeElement = document.getElementById('roe');
@@ -244,6 +236,14 @@ def longfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
+                liquidationPrice = entryPrice - (entryPrice / parseFloat(slider.value));
+                let liqPriceElement = document.getElementById('liq-price');
+                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
+                
+                risk = (1 - (liquidationPrice / entryPrice)) * 100;
+                let riskElement = document.getElementById('risk');
+                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2)) + "%";
+                
                 cryptoPriceElement.innerText = price;
                 roeValue = parseFloat((((price / entryPrice) - 1) * 100) * slider.value).toFixed(2);
                 roeElement.innerText = roeValue + "%";
@@ -355,14 +355,6 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
                 entryPrice = data["price"];
                 let entryPriceElement = document.getElementById('entry-price');
                 entryPriceElement.innerText = parseFloat(entryPrice).toFixed(2);
-                
-                liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value));
-                let liqPriceElement = document.getElementById('liq-price');
-                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
-
-                risk = (1 - (entryPrice / liquidationPrice)) * 100;
-                let riskElement = document.getElementById('risk');
-                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2));
             })
             let cryptoPriceElement = document.getElementById('crypto-price');
             let roeElement = document.getElementById('roe');
@@ -371,6 +363,14 @@ def shortfuturesContract(coinName, baseAssetAmount, quoteAssetAmount):
             ws.onmessage = (event) => {
                 let cryptoObject = JSON.parse(event.data);
                 let price = parseFloat(cryptoObject.p)
+                liquidationPrice = parseFloat(entryPrice) + (parseFloat(entryPrice) / parseFloat(slider.value-1));
+                let liqPriceElement = document.getElementById('liq-price');
+                liqPriceElement.innerText = parseFloat(liquidationPrice).toFixed(2);
+                
+                risk = (1 - (entryPrice / liquidationPrice)) * 100;
+                let riskElement = document.getElementById('risk');
+                riskElement.innerText = Math.abs(parseFloat(risk).toFixed(2)) + "%";
+                
                 cryptoPriceElement.innerText = price;
                 roeValue = parseFloat((((entryPrice / price) - 1) * 100) * slider.value).toFixed(2);
                 roeElement.innerText = roeValue + "%";
